@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/XenomorphingTV/waymark/exporter"
 	"github.com/XenomorphingTV/waymark/parser"
 )
 
 func main() {
-	src, err := os.ReadFile("test_input.way")
+	var file = string("test_input.way")
+
+	src, err := parser.Load(file)
 	if err != nil {
 		fmt.Println("error reading file:", err)
 		os.Exit(1)
 	}
 
-	tokens, err := parser.Tokenize(string(src))
+	tokens, err := parser.Tokenize(src)
 	if err != nil {
 		fmt.Println("error tokenizing:", err)
 		os.Exit(1)
@@ -34,4 +37,12 @@ func main() {
 	for _, scene := range story.Scenes {
 		fmt.Printf("scene: %s (%d nodes)\n", scene.Name, len(scene.Body))
 	}
+
+	data, err := exporter.Export(story)
+	if err != nil {
+		fmt.Println("error exporting:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(string(data))
 }

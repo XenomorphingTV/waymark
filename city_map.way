@@ -1,0 +1,11 @@
+scene city_map
+
+    The city sprawls before you. Crowds fill the market streets.
+
+    choice
+        "Head to the docks."
+            go docks
+        "Visit the guard post."
+            go guard_post
+        "Return to the tavern."
+            go tavern_job

@@ -21,7 +21,7 @@ const (
 	TOK_SAY
 	TOK_TEXT
 	TOK_DIALOGUE // A quoted line
-	TOK_COMMENTs
+	TOK_COMMENTS
 )
 
 func (t TokenType) String() string {
@@ -76,7 +76,7 @@ type Story struct {
 }
 
 type Node interface {
-	nodeType() string
+	NodeType() string
 }
 
 type SceneNode struct {
@@ -86,7 +86,7 @@ type SceneNode struct {
 
 type VarNode struct {
 	Name     string
-	Value    string
+	Value    any
 	Lifetime TokenType
 }
 
@@ -117,12 +117,12 @@ type JumpNode struct {
 type FinishNode struct{}
 type EndNode struct{}
 
-func (n *SceneNode) nodeType() string  { return "scene" }
-func (n *VarNode) nodeType() string    { return "var" }
-func (n *SetNode) nodeType() string    { return "set" }
-func (n *TextNode) nodeType() string   { return "text" }
-func (n *ChoiceNode) nodeType() string { return "choice" }
-func (n *BranchNode) nodeType() string { return "branch" }
-func (n *JumpNode) nodeType() string   { return "jump" }
-func (n *FinishNode) nodeType() string { return "finish" }
-func (n *EndNode) nodeType() string    { return "node" }
+func (n *SceneNode) NodeType() string  { return "scene" }
+func (n *VarNode) NodeType() string    { return "var" }
+func (n *SetNode) NodeType() string    { return "set" }
+func (n *TextNode) NodeType() string   { return "text" }
+func (n *ChoiceNode) NodeType() string { return "choice" }
+func (n *BranchNode) NodeType() string { return "branch" }
+func (n *JumpNode) NodeType() string   { return "jump" }
+func (n *FinishNode) NodeType() string { return "finish" }
+func (n *EndNode) NodeType() string    { return "node" }

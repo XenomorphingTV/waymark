@@ -1,3 +1,5 @@
+include "city_map.way"
+
 scene tavern_job
 
     var quest_active = false

@@ -2,12 +2,57 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
 type Parser struct {
 	tokens []Token
 	pos    int
+}
+
+// Parse loads, tokenizes, and parses a .way file in one call.
+func ParseFile(path string) (*Story, error) {
+	src, err := Load(path)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := Tokenize(src)
+	if err != nil {
+		return nil, err
+	}
+	return Parse(tokens)
+}
+
+func (s *Story) Scene(name string) (*SceneNode, bool) {
+	for _, scene := range s.Scenes {
+		if scene.Name == name {
+			return scene, true
+		}
+	}
+	return nil, false
+}
+
+func Walk(nodes []Node, fn func(Node)) {
+	for _, n := range nodes {
+		fn(n)
+		switch v := n.(type) {
+		case *ChoiceNode:
+			for _, b := range v.Branches {
+				Walk(b.Body, fn)
+			}
+		}
+	}
+}
+
+func (s *SceneNode) Variables() []*VarNode {
+	var vars []*VarNode
+	Walk(s.Body, func(n Node) {
+		if v, ok := n.(*VarNode); ok {
+			vars = append(vars, v)
+		}
+	})
+	return vars
 }
 
 // Parse builds a Story AST from a flat token stream. Top-level tokens must be SCENE definitions.
@@ -94,7 +139,7 @@ func (p *Parser) parseValDecl() (*VarNode, error) {
 
 	return &VarNode{
 		Name:     strings.TrimSpace(parts[0]),
-		Value:    strings.TrimSpace(parts[1]),
+		Value:    parseValue(strings.TrimSpace(parts[1])),
 		Lifetime: tok.Type,
 	}, nil
 }
@@ -148,6 +193,22 @@ func (p *Parser) parseBranch(indent int) (*BranchNode, error) {
 	}
 
 	return branch, nil
+}
+
+func parseValue(raw string) any {
+	if raw == "true" {
+		return true
+	}
+	if raw == "false" {
+		return false
+	}
+	if i, err := strconv.Atoi(raw); err == nil {
+		return i
+	}
+	if f, err := strconv.ParseFloat(raw, 64); err == nil {
+		return f
+	}
+	return strings.Trim(raw, `"`)
 }
 
 func (p *Parser) peek() Token {
