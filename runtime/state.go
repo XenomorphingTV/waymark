@@ -1,10 +1,12 @@
+package runtime
+
 import "github.com/XenomorphingTV/waymark/parser"
 
 type Engine struct {
-	Story     *parser.Story
-	Vars      map[string]any
-	Callbacks []callback
-	Pos       cursor
+	story     *parser.Story
+	vars      map[string]any
+	callbacks []callback
+	pos       cursor
 }
 
 type callback struct {
