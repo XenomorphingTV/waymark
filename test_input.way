@@ -1,23 +1,23 @@
 scene tavern_job
 
-  var quest_active = false
-  local conversation_depth = 0
+    var quest_active = false
+    local conversation_depth = 0
 
-  The barkeep slides a piece of paper across the bar.
+    The barkeep slides a piece of paper across the bar.
 
-  "There's a man who owes me. Name's Carro. Find him."
+    "There's a man who owes me. Name's Carro. Find him."
 
-  set conversation_depth += 1
-  set quest_active = true
-  keep reward = 100
+    set conversation_depth += 1
+    set quest_active = true
+    keep reward = 100
 
-  choice
-    "Where do I start looking?" when conversation_depth < 3
-      "Try the docks. He drinks there."
-      set conversation_depth += 1
-      go tavern_job
-    "I'll find him." when quest_active
-      go city_map
-    "Not interested."
-      set quest_active = false
-      finish
+    choice
+        "Where do I start looking?" when conversation_depth < 3
+            "Try the docks. He drinks there."
+            set conversation_depth += 1
+            go tavern_job
+        "I'll find him." when quest_active
+            go city_map
+        "Not interested."
+            set quest_active = false
+            finish

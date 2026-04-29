@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+const spacesPerIndent = 4
+
+// Takes a raw Waymark source string and converts it to a flat slice of tokens
 func Tokenize(src string) ([]Token, error) {
 	var tokens []Token
 	lines := strings.Split(src, "\n")
@@ -32,6 +35,38 @@ func Tokenize(src string) ([]Token, error) {
 			tok.Type, tok.Value = TOK_SCENE, after(trimmed, "scene ")
 		case strings.HasPrefix(trimmed, "var "):
 			tok.Type, tok.Value = TOK_VAR, after(trimmed, "var ")
+		case strings.HasPrefix(trimmed, "local "):
+			tok.Type, tok.Value = TOK_LOCAL, after(trimmed, "local ")
+		case strings.HasPrefix(trimmed, "keep "):
+			tok.Type, tok.Value = TOK_KEEP, after(trimmed, "keep ")
+		case strings.HasPrefix(trimmed, "set "):
+			tok.Type, tok.Value = TOK_SET, after(trimmed, "set ")
+		case strings.HasPrefix(trimmed, "input "):
+			tok.Type, tok.Value = TOK_INPUT, after(trimmed, "input ")
+		case trimmed == "choice":
+			tok.Type = TOK_CHOICE
+		case trimmed == "go" || strings.HasPrefix(trimmed, "go "):
+			tok.Type, tok.Value = TOK_GO, after(trimmed, "go ")
+		case trimmed == "call" || strings.HasPrefix(trimmed, "call "):
+			tok.Type, tok.Value = TOK_CALL, after(trimmed, "call ")
+		case trimmed == "finish":
+			tok.Type = TOK_FINISH
+		case trimmed == "end":
+			tok.Type = TOK_END
+		case strings.HasPrefix(trimmed, `"`):
+			// NOTE: Quoted strings in a `choice` block are emitted as DIALOGUE, not BRANCH
+			closeQuote := strings.Index(trimmed[1:], `"`) + 1
+			label := trimmed[1:closeQuote]
+			rest := strings.TrimSpace(trimmed[closeQuote+1:])
+
+			if strings.HasPrefix(rest, "when ") {
+				tok.Type = TOK_BRANCH
+				tok.Value = label
+				tok.Condition = after(rest, "when ")
+			} else {
+				tok.Type = TOK_DIALOGUE
+				tok.Value = label
+			}
 		default:
 			tok.Type, tok.Value = TOK_TEXT, trimmed
 		}
@@ -42,35 +77,39 @@ func Tokenize(src string) ([]Token, error) {
 	return tokens, nil
 }
 
-// Count the number of indents in a line. Only accepts tabs, not spaces
+// Count the number of indents in a line. Accepts tabs and spaces, for now
+// defined static in spacesPerIndent
 func countIndent(line string) (int, error) {
-	if len(line) == 0 {
-		return 0, nil
-	}
+	tabs, spaces := 0, 0
 
-	// Detect if the line uses spaces for indenting
-	if line[0] == ' ' {
-		spaces := 0
-		for _, ch := range line {
-			if ch != ' ' {
-				break
+	for _, ch := range line {
+		switch ch {
+		case '\t':
+			if spaces > 0 {
+				return 0, fmt.Errorf("mixed tabs and spaces in indent")
+			}
+			tabs++
+		case ' ':
+			if tabs > 0 {
+				return 0, fmt.Errorf("mixed tabs and spaces in indent")
 			}
 			spaces++
+		default:
+			goto done
 		}
-		return 0, fmt.Errorf(
-			"indent uses spaces (%d found) — Waymark requires tabs. "+
-				"Check your editor's 'indent with tabs' setting", spaces,
-		)
 	}
 
-	indent := 0
-	for _, ch := range line {
-		if ch != '\t' {
-			break
+done:
+	if spaces > 0 {
+		if spaces%spacesPerIndent != 0 {
+			return 0, fmt.Errorf(
+				"indent of %d spaces is not a multiple of %d",
+				spaces, spacesPerIndent,
+			)
 		}
-		indent++
+		return spaces / spacesPerIndent, nil
 	}
-	return indent, nil
+	return tabs, nil
 }
 
 // Wrapper for trimming prefix from line

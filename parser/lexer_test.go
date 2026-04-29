@@ -85,3 +85,5 @@ func TestTokenize(t *testing.T) {
 		})
 	}
 }
+
+// TODO: Finish implementing the lexer tests
