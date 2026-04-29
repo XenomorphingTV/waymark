@@ -80,14 +80,14 @@ func (e *Engine) run() (*State, error) {
 }
 
 func (e *Engine) setVar(name string, val any) {
-	// check locals top to bottom
+	// Check locals top to bottom
 	for i := len(e.callStack) - 1; i >= 0; i-- {
 		if _, ok := e.callStack[i].locals[name]; ok {
 			e.callStack[i].locals[name] = val
 			return
 		}
 	}
-	// fall back to globals
+	// Fall back to globals
 	e.vars[name] = val
 }
 
@@ -240,33 +240,33 @@ func (p *conditionParser) readToken() string {
 }
 
 func (e *Engine) resolveValue(s string) any {
-	// string literal
+	// String literal
 	if strings.HasPrefix(s, `"`) {
 		return strings.Trim(s, `"`)
 	}
-	// bool literal
+	// Bool literal
 	if s == "true" {
 		return true
 	}
 	if s == "false" {
 		return false
 	}
-	// int literal
+	// Int literal
 	if i, err := strconv.Atoi(s); err == nil {
 		return i
 	}
-	// float literal
+	// Float literal
 	if f, err := strconv.ParseFloat(s, 64); err == nil {
 		return f
 	}
-	// variable lookup — check locals first, then globals
+	// Variable lookup — check locals first, then globals
 	if val, ok := e.localVar(s); ok {
 		return val
 	}
 	if val, ok := e.vars[s]; ok {
 		return val
 	}
-	// unknown variable — return nil
+	// Unknown variable — return nil
 	return nil
 }
 
@@ -300,7 +300,7 @@ func compare(left any, op string, right any) bool {
 		}
 	}
 
-	// string/bool equality
+	// String/bool equality
 	switch op {
 	case "==":
 		return fmt.Sprintf("%v", left) == fmt.Sprintf("%v", right)
