@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -11,6 +12,9 @@ const spacesPerIndent = 4
 func Tokenize(src string) ([]Token, error) {
 	var tokens []Token
 	lines := strings.Split(src, "\n")
+
+	// Matches pattern: word "quoted string" [when ...]
+	branchRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\s+"([^"]+)"(?:\s+when\s+(.+))?$`)
 
 	for i, raw := range lines {
 		// Strip \r for Windows line endings
@@ -53,20 +57,13 @@ func Tokenize(src string) ([]Token, error) {
 			tok.Type = TOK_FINISH
 		case trimmed == "end":
 			tok.Type = TOK_END
+		case branchRe.MatchString(trimmed):
+			matches := branchRe.FindStringSubmatch(trimmed)
+			tok.Type, tok.ID, tok.Value, tok.Condition = TOK_BRANCH, matches[1], matches[2], matches[3]
 		case strings.HasPrefix(trimmed, `"`):
-			// NOTE: Quoted strings in a `choice` block are emitted as DIALOGUE, not BRANCH
 			closeQuote := strings.Index(trimmed[1:], `"`) + 1
 			label := trimmed[1:closeQuote]
-			rest := strings.TrimSpace(trimmed[closeQuote+1:])
-
-			if strings.HasPrefix(rest, "when ") {
-				tok.Type = TOK_BRANCH
-				tok.Value = label
-				tok.Condition = after(rest, "when ")
-			} else {
-				tok.Type = TOK_DIALOGUE
-				tok.Value = label
-			}
+			tok.Type, tok.Value = TOK_DIALOGUE, label
 		default:
 			tok.Type, tok.Value = TOK_TEXT, trimmed
 		}

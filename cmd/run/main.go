@@ -10,7 +10,7 @@ import (
 func main() {
 	engine := runtime.New(&parser.Story{})
 
-	// seed some variables
+	// Seed some variables
 	engine.SetVar("conversation_depth", 1)
 	engine.SetVar("quest_active", true)
 	engine.SetVar("player_strength", 10)

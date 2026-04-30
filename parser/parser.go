@@ -124,6 +124,8 @@ func (p *Parser) parseNode(indent int) (Node, error) {
 	case TOK_END:
 		p.consume()
 		return &EndNode{}, nil
+	case TOK_BRANCH:
+		return nil, fmt.Errorf("line %d: branch outside of choice block", tok.Line)
 	}
 
 	return nil, fmt.Errorf("line %d: unexpected token %v", tok.Line, tok.Type)
@@ -155,7 +157,7 @@ func (p *Parser) parseChoice(indent int) (*ChoiceNode, error) {
 
 		// Both BRANCH and DIALOGUE at this indent are choice options
 		// DIALOGUE here means a quoted string with no `when`
-		if tok.Type != TOK_BRANCH && tok.Type != TOK_DIALOGUE {
+		if tok.Type != TOK_BRANCH {
 			break
 		}
 
@@ -174,9 +176,10 @@ func (p *Parser) parseChoice(indent int) (*ChoiceNode, error) {
 }
 
 func (p *Parser) parseBranch(indent int) (*BranchNode, error) {
-	tok := p.consume() // BRANCH or DIALOGUE
+	tok := p.consume()
 
 	branch := &BranchNode{
+		ID:        tok.ID,
 		Label:     tok.Value,
 		Condition: tok.Condition,
 	}

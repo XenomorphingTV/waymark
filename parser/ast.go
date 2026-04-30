@@ -66,6 +66,7 @@ func (t TokenType) String() string {
 type Token struct {
 	Type      TokenType
 	Value     string
+	ID        string
 	Condition string
 	Indent    int
 	Line      int
@@ -104,6 +105,7 @@ type ChoiceNode struct {
 }
 
 type BranchNode struct {
+	ID        string
 	Label     string
 	Condition string
 	Body      []Node

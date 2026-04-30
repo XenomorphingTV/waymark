@@ -34,6 +34,7 @@ type Line struct {
 
 type Choice struct {
 	Index int
+	ID    string
 	Label string
 }
 

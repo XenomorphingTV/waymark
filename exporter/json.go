@@ -40,6 +40,7 @@ type ChoiceNodeJSON struct {
 }
 
 type BranchNodeJSON struct {
+	ID        string `json:"id"`
 	Type      string `json:"type"`
 	Label     string `json:"label"`
 	Condition string `json:"condition"`
@@ -163,6 +164,7 @@ func exportBranch(node *parser.BranchNode) (BranchNodeJSON, error) {
 
 	return BranchNodeJSON{
 		Type:      node.NodeType(),
+		ID:        node.ID,
 		Label:     node.Label,
 		Condition: node.Condition,
 		Body:      body,

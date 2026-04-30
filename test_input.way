@@ -14,12 +14,12 @@ scene tavern_job
     keep reward = 100
 
     choice
-        "Where do I start looking?" when conversation_depth < 3
+        where "Where do I start looking?" when conversation_depth < 3
             "Try the docks. He drinks there."
             set conversation_depth += 1
             go tavern_job
-        "I'll find him." when quest_active
+        accept "I'll find him." when quest_active
             go city_map
-        "Not interested."
+        refuse "Not interested."
             set quest_active = false
             finish
