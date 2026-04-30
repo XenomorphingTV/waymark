@@ -7,7 +7,7 @@ scene tavern_job
 
     The barkeep slides a piece of paper across the bar.
 
-    "There's a man who owes me. Name's Carro. Find him."
+    "There's a man who owes me. Name's Carro. Find him. I'll give you {reward} gold coins"
 
     set conversation_depth += 1
     set quest_active = true

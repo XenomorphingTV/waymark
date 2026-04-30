@@ -61,6 +61,11 @@ func Parse(tokens []Token) (*Story, error) {
 	story := &Story{}
 
 	for !p.done() {
+		// Skip include tokens
+		if p.peek().Type == TOK_INCLUDE {
+			p.consume()
+			continue
+		}
 		if p.peek().Type != TOK_SCENE {
 			return nil, fmt.Errorf("line %d: expected scene, got %v", p.peek().Line, p.peek().Type)
 		}

@@ -22,6 +22,7 @@ const (
 	TOK_TEXT
 	TOK_DIALOGUE // A quoted line
 	TOK_COMMENTS
+	TOK_INCLUDE
 )
 
 func (t TokenType) String() string {
@@ -58,6 +59,8 @@ func (t TokenType) String() string {
 		return "TEXT"
 	case TOK_DIALOGUE:
 		return "DIALOGUE"
+	case TOK_INCLUDE:
+		return "INCLUDE"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}

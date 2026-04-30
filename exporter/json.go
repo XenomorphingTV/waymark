@@ -40,8 +40,8 @@ type ChoiceNodeJSON struct {
 }
 
 type BranchNodeJSON struct {
-	ID        string `json:"id"`
 	Type      string `json:"type"`
+	ID        string `json:"id"`
 	Label     string `json:"label"`
 	Condition string `json:"condition"`
 	Body      []any  `json:"body"`

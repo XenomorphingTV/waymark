@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -12,9 +11,6 @@ const spacesPerIndent = 4
 func Tokenize(src string) ([]Token, error) {
 	var tokens []Token
 	lines := strings.Split(src, "\n")
-
-	// Matches pattern: word "quoted string" [when ...]
-	branchRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\s+"([^"]+)"(?:\s+when\s+(.+))?$`)
 
 	for i, raw := range lines {
 		// Strip \r for Windows line endings
@@ -57,9 +53,12 @@ func Tokenize(src string) ([]Token, error) {
 			tok.Type = TOK_FINISH
 		case trimmed == "end":
 			tok.Type = TOK_END
-		case branchRe.MatchString(trimmed):
-			matches := branchRe.FindStringSubmatch(trimmed)
-			tok.Type, tok.ID, tok.Value, tok.Condition = TOK_BRANCH, matches[1], matches[2], matches[3]
+		case strings.HasPrefix(trimmed, "include "):
+			tok.Type = TOK_INCLUDE
+			tok.Value = strings.Trim(after(trimmed, "include "), `"`)
+		case isBranchLine(trimmed):
+			id, label, cond := parseBranchLine(trimmed)
+			tok.Type, tok.ID, tok.Value, tok.Condition = TOK_BRANCH, id, label, cond
 		case strings.HasPrefix(trimmed, `"`):
 			closeQuote := strings.Index(trimmed[1:], `"`) + 1
 			label := trimmed[1:closeQuote]
@@ -72,6 +71,32 @@ func Tokenize(src string) ([]Token, error) {
 	}
 
 	return tokens, nil
+}
+
+func isBranchLine(s string) bool {
+	// Find first space
+	spaceIdx := strings.Index(s, " ")
+	if spaceIdx == -1 {
+		return false
+	}
+	rest := strings.TrimSpace(s[spaceIdx:])
+	return strings.HasPrefix(rest, `"`)
+}
+
+func parseBranchLine(s string) (id, label, condition string) {
+	spaceIdx := strings.Index(s, " ")
+	id = s[:spaceIdx]
+	rest := strings.TrimSpace(s[spaceIdx:])
+
+	// extract quoted label
+	closeQuote := strings.Index(rest[1:], `"`) + 1
+	label = rest[1:closeQuote]
+	after := strings.TrimSpace(rest[closeQuote+1:])
+
+	if strings.HasPrefix(after, "when ") {
+		condition = strings.TrimPrefix(after, "when ")
+	}
+	return
 }
 
 // Count the number of indents in a line. Accepts tabs and spaces, for now
